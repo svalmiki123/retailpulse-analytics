@@ -75,9 +75,9 @@ resource "snowflake_grant_account_role" "reporter_role_to_reporter_user" {
 # ═══════════════════════════════════════════════════
 
 resource "snowflake_grant_privileges_to_account_role" "transform_wh_to_dbt" {
+  provider          = snowflake.securityadmin
   account_role_name = snowflake_account_role.dbt_role.name
   privileges        = ["USAGE"]
-
   on_account_object {
     object_type = "WAREHOUSE"
     object_name = snowflake_warehouse.transform_wh.name
@@ -85,9 +85,9 @@ resource "snowflake_grant_privileges_to_account_role" "transform_wh_to_dbt" {
 }
 
 resource "snowflake_grant_privileges_to_account_role" "ingest_wh_to_loader" {
+  provider          = snowflake.securityadmin
   account_role_name = snowflake_account_role.raw_loader_role.name
   privileges        = ["USAGE"]
-
   on_account_object {
     object_type = "WAREHOUSE"
     object_name = snowflake_warehouse.ingest_wh.name
@@ -95,9 +95,9 @@ resource "snowflake_grant_privileges_to_account_role" "ingest_wh_to_loader" {
 }
 
 resource "snowflake_grant_privileges_to_account_role" "reporting_wh_to_reporter" {
+  provider          = snowflake.securityadmin
   account_role_name = snowflake_account_role.reporter_role.name
   privileges        = ["USAGE"]
-
   on_account_object {
     object_type = "WAREHOUSE"
     object_name = snowflake_warehouse.reporting_wh.name
@@ -105,9 +105,9 @@ resource "snowflake_grant_privileges_to_account_role" "reporting_wh_to_reporter"
 }
 
 resource "snowflake_grant_privileges_to_account_role" "reporting_wh_to_analyst" {
+  provider          = snowflake.securityadmin
   account_role_name = snowflake_account_role.analyst_role.name
   privileges        = ["USAGE"]
-
   on_account_object {
     object_type = "WAREHOUSE"
     object_name = snowflake_warehouse.reporting_wh.name
