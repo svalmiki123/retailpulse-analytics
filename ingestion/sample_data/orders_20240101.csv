@@ -1,0 +1,11 @@
+order_id,customer_id,product_id,order_date,ship_date,status,quantity,unit_price,discount,region
+1001,C001,P101,2024-01-01,2024-01-03,completed,2,29.99,0.00,North
+1002,C002,P102,2024-01-01,2024-01-04,completed,1,149.99,10.00,South
+1003,C003,P103,2024-01-02,2024-01-05,completed,3,9.99,0.00,East
+1004,C001,P104,2024-01-02,2024-01-06,returned,1,79.99,5.00,North
+1005,C004,P101,2024-01-03,2024-01-07,completed,4,29.99,0.00,West
+1006,C005,P105,2024-01-03,2024-01-08,completed,2,199.99,20.00,South
+1007,C002,P102,2024-01-04,2024-01-09,completed,1,149.99,0.00,South
+1008,C006,P103,2024-01-04,2024-01-10,pending,5,9.99,0.00,East
+1009,C007,P106,2024-01-05,2024-01-11,completed,1,299.99,15.00,West
+1010,C003,P101,2024-01-05,2024-01-12,completed,2,29.99,0.00,East

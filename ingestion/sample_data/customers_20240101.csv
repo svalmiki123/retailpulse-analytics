@@ -1,0 +1,8 @@
+customer_id,first_name,last_name,email,phone,city,state,country,signup_date,customer_segment
+C001,James,Wilson,james.wilson@email.com,555-0101,Chicago,IL,USA,2023-06-15,Premium
+C002,Sarah,Johnson,sarah.j@email.com,555-0102,Austin,TX,USA,2023-07-22,Standard
+C003,Michael,Chen,m.chen@email.com,555-0103,Seattle,WA,USA,2023-08-10,Standard
+C004,Emily,Davis,emily.d@email.com,555-0104,Miami,FL,USA,2023-09-01,Premium
+C005,Robert,Martinez,r.martinez@email.com,555-0105,Denver,CO,USA,2023-09-15,Standard
+C006,Lisa,Anderson,l.anderson@email.com,555-0106,Boston,MA,USA,2023-10-03,Premium
+C007,David,Thompson,d.thompson@email.com,555-0107,Portland,OR,USA,2023-11-20,Standard
