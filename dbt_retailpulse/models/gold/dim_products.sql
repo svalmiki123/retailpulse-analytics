@@ -2,7 +2,11 @@
   config(
     materialized = 'table',
     schema       = 'GOLD',
-    tags         = ['gold', 'dimensions']
+    tags         = ['gold', 'dimensions'],
+    post_hook    = [
+      "{{ audit_log() }}",
+      "{{ unload_to_s3(this, 'dim_products') }}"
+    ]
   )
 }}
 
