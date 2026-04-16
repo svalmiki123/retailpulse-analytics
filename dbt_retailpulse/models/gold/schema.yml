@@ -1,0 +1,67 @@
+version: 2
+
+models:
+
+  - name: dim_date
+    description: "Date dimension. One row per calendar date 2023-2027."
+    columns:
+      - name: date_day
+        tests: [unique, not_null]
+      - name: date_key
+        tests: [unique, not_null]
+
+  - name: dim_customers
+    description: "Customer dimension enriched with order history."
+    columns:
+      - name: customer_sk
+        tests: [unique, not_null]
+      - name: customer_id
+        tests: [unique, not_null]
+      - name: email
+        tests: [unique, not_null]
+      - name: value_tier
+        tests:
+          - accepted_values:
+              values: ['High Value', 'Mid Value', 'Low Value', 'No Orders']
+
+  - name: dim_products
+    description: "Product dimension enriched with sales performance."
+    columns:
+      - name: product_sk
+        tests: [unique, not_null]
+      - name: product_id
+        tests: [unique, not_null]
+      - name: performance_tier
+        tests:
+          - accepted_values:
+              values: ['Top Seller', 'Mid Seller', 'Low Seller', 'Never Sold']
+
+  - name: fct_orders
+    description: "Central fact table. One row per order."
+    columns:
+      - name: order_sk
+        tests: [unique, not_null]
+      - name: order_id
+        tests: [unique, not_null]
+      - name: customer_sk
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_sk
+      - name: product_sk
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_products')
+              field: product_sk
+      - name: order_date_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: revenue
+        tests: [not_null]
+      - name: quantity
+        tests: [not_null]
