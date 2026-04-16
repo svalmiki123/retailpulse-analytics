@@ -26,4 +26,4 @@ venv/
 # Secrets — NEVER commit these
 *.pem
 *.key
-secrets.json
+secrets.jsondbt_venv/
