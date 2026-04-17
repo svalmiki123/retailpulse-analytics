@@ -36,3 +36,5 @@ models:
       +materialized: view
       +schema: SEMANTIC
       +tags: ["semantic", "metrics"]
+      metricflow_time_spine:
+        +materialized: table

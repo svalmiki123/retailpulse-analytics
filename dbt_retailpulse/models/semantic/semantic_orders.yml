@@ -1,0 +1,105 @@
+semantic_models:
+  - name: orders
+    description: >
+      Semantic model over fct_orders. Defines the grain, entities,
+      dimensions and measures for all order-related metrics.
+    model: ref('fct_orders')
+
+    entities:
+      - name: order
+        type: primary
+        expr: order_id
+      - name: customer
+        type: foreign
+        expr: customer_sk
+      - name: product
+        type: foreign
+        expr: product_sk
+
+    dimensions:
+      - name: order_date
+        type: time
+        type_params:
+          time_granularity: day
+        expr: order_date
+      - name: order_status
+        type: categorical
+        expr: order_status
+      - name: region
+        type: categorical
+        expr: region
+      - name: customer_segment
+        type: categorical
+        expr: customer_segment
+      - name: customer_value_tier
+        type: categorical
+        expr: customer_value_tier
+      - name: product_category
+        type: categorical
+        expr: product_category
+      - name: product_subcategory
+        type: categorical
+        expr: product_subcategory
+      - name: product_price_tier
+        type: categorical
+        expr: product_price_tier
+      - name: order_year
+        type: categorical
+        expr: order_year
+      - name: order_quarter
+        type: categorical
+        expr: order_quarter
+      - name: order_month
+        type: categorical
+        expr: order_month
+      - name: ordered_on_weekend
+        type: categorical
+        expr: ordered_on_weekend
+      - name: has_discount
+        type: categorical
+        expr: has_discount
+      - name: is_returned
+        type: categorical
+        expr: is_returned
+
+    measures:
+      - name: order_count
+        description: "Total number of orders"
+        agg: count
+        expr: order_id
+        agg_time_dimension: order_date
+      - name: total_revenue
+        description: "Sum of revenue"
+        agg: sum
+        expr: revenue
+        agg_time_dimension: order_date
+      - name: total_net_amount
+        description: "Sum of net amount"
+        agg: sum
+        expr: net_amount
+        agg_time_dimension: order_date
+      - name: total_quantity
+        description: "Total units sold"
+        agg: sum
+        expr: quantity
+        agg_time_dimension: order_date
+      - name: total_discount
+        description: "Total discount given"
+        agg: sum
+        expr: discount
+        agg_time_dimension: order_date
+      - name: avg_order_value
+        description: "Average revenue per order"
+        agg: average
+        expr: revenue
+        agg_time_dimension: order_date
+      - name: days_to_ship_avg
+        description: "Average days to ship"
+        agg: average
+        expr: days_to_ship
+        agg_time_dimension: order_date
+      - name: return_count
+        description: "Number of returned orders"
+        agg: sum
+        expr: is_returned
+        agg_time_dimension: order_date

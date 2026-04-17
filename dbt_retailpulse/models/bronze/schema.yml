@@ -17,7 +17,8 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['completed', 'pending', 'returned']
+              arguments:
+                values: ['completed', 'pending', 'returned']
 
   - name: bronze_customers
     description: "Bronze view over raw_customers. No transformations applied."

@@ -1,0 +1,58 @@
+version: 2
+
+exposures:
+
+  - name: retailpulse_streamlit_dashboard
+    label: "RetailPulse Streamlit Dashboard"
+    type: dashboard
+    maturity: medium
+    url: "https://app.snowflake.com/streamlit/retailpulse"
+    description: >
+      Interactive Streamlit dashboard built inside Snowflake.
+      Shows revenue trends, customer segments, and product performance.
+      Reads directly from Gold and Semantic layers.
+
+    depends_on:
+      - ref('fct_orders')
+      - ref('dim_customers')
+      - ref('dim_products')
+      - ref('dim_date')
+
+    owner:
+      name: Sivasai Valmiki
+      email: sivasai@retailpulse.internal
+
+  - name: retailpulse_claude_ai_query
+    label: "Claude AI NLP Query Engine"
+    type: application
+    maturity: low
+    description: >
+      Natural language to SQL query interface powered by Claude API.
+      Allows business users to ask questions in plain English
+      against the Gold and Semantic layers.
+
+    depends_on:
+      - ref('fct_orders')
+      - ref('dim_customers')
+      - ref('dim_products')
+      - ref('dim_date')
+
+    owner:
+      name: Sivasai Valmiki
+      email: sivasai@retailpulse.internal
+
+  - name: retailpulse_executive_report
+    label: "Executive Weekly Report"
+    type: analysis
+    maturity: high
+    description: >
+      Weekly executive summary exported to S3 via dbt unload macro.
+      Covers total revenue, order count, return rate, and customer LTV.
+
+    depends_on:
+      - ref('fct_orders')
+      - ref('dim_customers')
+
+    owner:
+      name: Sivasai Valmiki
+      email: sivasai@retailpulse.internal
