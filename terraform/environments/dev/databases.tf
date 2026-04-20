@@ -37,10 +37,6 @@ resource "snowflake_schema" "bronze" {
   comment                     = "Raw ingested tables — append only. Managed by Terraform."
   data_retention_time_in_days = 7
   is_transient                = false
-
-  lifecycle {
-    ignore_changes = [with_managed_access]
-  }
 }
 
 resource "snowflake_schema" "silver" {
@@ -51,9 +47,6 @@ resource "snowflake_schema" "silver" {
   data_retention_time_in_days = 14
   is_transient                = false
 
-  lifecycle {
-    ignore_changes = [with_managed_access]
-  }
 }
 
 resource "snowflake_schema" "gold" {
@@ -64,9 +57,6 @@ resource "snowflake_schema" "gold" {
   data_retention_time_in_days = 14
   is_transient                = false
 
-  lifecycle {
-    ignore_changes = [with_managed_access]
-  }
 }
 
 resource "snowflake_schema" "semantic" {
@@ -77,9 +67,6 @@ resource "snowflake_schema" "semantic" {
   data_retention_time_in_days = 14
   is_transient                = false
 
-  lifecycle {
-    ignore_changes = [with_managed_access]
-  }
 }
 
 resource "snowflake_schema" "prod_silver" {
@@ -90,9 +77,6 @@ resource "snowflake_schema" "prod_silver" {
   data_retention_time_in_days = 30
   is_transient                = false
 
-  lifecycle {
-    ignore_changes = [with_managed_access]
-  }
 }
 
 resource "snowflake_schema" "prod_gold" {
@@ -103,9 +87,6 @@ resource "snowflake_schema" "prod_gold" {
   data_retention_time_in_days = 30
   is_transient                = false
 
-  lifecycle {
-    ignore_changes = [with_managed_access]
-  }
 }
 
 resource "snowflake_schema" "prod_semantic" {
@@ -116,9 +97,6 @@ resource "snowflake_schema" "prod_semantic" {
   data_retention_time_in_days = 30
   is_transient                = false
 
-  lifecycle {
-    ignore_changes = [with_managed_access]
-  }
 }
 
 # ═══════════════════════════════════════════════════
