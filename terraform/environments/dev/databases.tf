@@ -7,6 +7,7 @@ resource "snowflake_database" "raw_db" {
   name                        = "RAW_DB"
   comment                     = "Bronze layer — raw ingested data. Managed by Terraform."
   data_retention_time_in_days = 7
+  is_transient                = false
 }
 
 resource "snowflake_database" "dev_db" {
@@ -14,6 +15,7 @@ resource "snowflake_database" "dev_db" {
   name                        = "DEV_DB"
   comment                     = "Silver and Gold layers — dbt transformations. Managed by Terraform."
   data_retention_time_in_days = 14
+  is_transient                = false
 }
 
 resource "snowflake_database" "prod_db" {
@@ -21,6 +23,7 @@ resource "snowflake_database" "prod_db" {
   name                        = "PROD_DB"
   comment                     = "Production Gold and Semantic layers. Managed by Terraform."
   data_retention_time_in_days = 30
+  is_transient                = false
 }
 
 # ═══════════════════════════════════════════════════
