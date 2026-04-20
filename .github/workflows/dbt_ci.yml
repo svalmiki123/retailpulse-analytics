@@ -8,7 +8,7 @@ on:
       - '.github/workflows/dbt_ci.yml'
 
 env:
-  DBT_PROJECT_DIR: dbt_retailpulse
+  PROJECT_DIR: dbt_retailpulse
 
 jobs:
   dbt-ci:
@@ -36,7 +36,7 @@ jobs:
 
       # ── 4. Install dbt packages ───────────────────────────
       - name: Install dbt packages
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        working-directory: ${{ env.PROJECT_DIR }}
         env:
           SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
           SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
@@ -45,7 +45,7 @@ jobs:
 
       # ── 5. Test connection ────────────────────────────────
       - name: dbt debug
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        working-directory: ${{ env.PROJECT_DIR }}
         env:
           SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
           SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
@@ -62,12 +62,12 @@ jobs:
         run: |
           aws s3 cp \
             s3://retailpulse-data-lake-siva-valmiki/dbt-artifacts/prod/manifest.json \
-            ${{ env.DBT_PROJECT_DIR }}/prod_manifest.json \
+            ${{ env.PROJECT_DIR }}/prod_manifest.json \
           || echo "No prod manifest found — running full build"
 
       # ── 7. Run slim CI ────────────────────────────────────
       - name: dbt build (slim CI)
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        working-directory: ${{ env.PROJECT_DIR }}
         env:
           SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
           SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
@@ -95,12 +95,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dbt-ci-manifest
-          path: ${{ env.DBT_PROJECT_DIR }}/target/manifest.json
+          path: ${{ env.PROJECT_DIR }}/target/manifest.json
 
       # ── 9. Clean up CI schema ─────────────────────────────
       - name: Drop CI schema
         if: always()
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        working-directory: ${{ env.PROJECT_DIR }}
         env:
           SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
           SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
