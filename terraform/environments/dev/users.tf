@@ -15,6 +15,12 @@ resource "snowflake_user" "dbt_svc_user" {
   password             = var.dbt_svc_password
   must_change_password = false
   disabled             = false
+
+  # Provider v0.100+ attributes
+  mins_to_bypass_mfa              = -1
+  mins_to_unlock                  = -1
+  default_secondary_roles_option  = "DEFAULT"
+  disable_mfa                     = "default"
 }
 
 resource "snowflake_user" "loader_svc_user" {
@@ -30,6 +36,12 @@ resource "snowflake_user" "loader_svc_user" {
   password             = var.loader_svc_password
   must_change_password = false
   disabled             = false
+
+  # Provider v0.100+ attributes
+  mins_to_bypass_mfa              = -1
+  mins_to_unlock                  = -1
+  default_secondary_roles_option  = "DEFAULT"
+  disable_mfa                     = "default"
 }
 
 resource "snowflake_user" "reporter_svc_user" {
@@ -45,6 +57,12 @@ resource "snowflake_user" "reporter_svc_user" {
   password             = var.reporter_svc_password
   must_change_password = false
   disabled             = false
+
+  # Provider v0.100+ attributes
+  mins_to_bypass_mfa              = -1
+  mins_to_unlock                  = -1
+  default_secondary_roles_option  = "DEFAULT"
+  disable_mfa                     = "default"
 }
 
 # ═══════════════════════════════════════════════════

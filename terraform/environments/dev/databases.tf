@@ -37,6 +37,7 @@ resource "snowflake_schema" "bronze" {
   comment                     = "Raw ingested tables — append only. Managed by Terraform."
   data_retention_time_in_days = 7
   is_transient                = false
+  with_managed_access         = "default"
 }
 
 resource "snowflake_schema" "silver" {
@@ -46,6 +47,7 @@ resource "snowflake_schema" "silver" {
   comment                     = "Cleaned and conformed models. Managed by Terraform."
   data_retention_time_in_days = 14
   is_transient                = false
+  with_managed_access         = "default"
 }
 
 resource "snowflake_schema" "gold" {
@@ -55,6 +57,7 @@ resource "snowflake_schema" "gold" {
   comment                     = "Fact and dimension tables. Managed by Terraform."
   data_retention_time_in_days = 14
   is_transient                = false
+  with_managed_access         = "default"
 }
 
 resource "snowflake_schema" "semantic" {
@@ -64,6 +67,7 @@ resource "snowflake_schema" "semantic" {
   comment                     = "MetricFlow semantic layer. Managed by Terraform."
   data_retention_time_in_days = 14
   is_transient                = false
+  with_managed_access         = "default"
 }
 
 resource "snowflake_schema" "prod_silver" {
@@ -73,6 +77,7 @@ resource "snowflake_schema" "prod_silver" {
   comment                     = "Production Silver layer. Managed by Terraform."
   data_retention_time_in_days = 30
   is_transient                = false
+  with_managed_access         = "default"
 }
 
 resource "snowflake_schema" "prod_gold" {
@@ -82,6 +87,7 @@ resource "snowflake_schema" "prod_gold" {
   comment                     = "Production Gold layer. Managed by Terraform."
   data_retention_time_in_days = 30
   is_transient                = false
+  with_managed_access         = "default"
 }
 
 resource "snowflake_schema" "prod_semantic" {
@@ -91,6 +97,7 @@ resource "snowflake_schema" "prod_semantic" {
   comment                     = "Production Semantic layer. Managed by Terraform."
   data_retention_time_in_days = 30
   is_transient                = false
+  with_managed_access         = "default"
 }
 
 # ═══════════════════════════════════════════════════
