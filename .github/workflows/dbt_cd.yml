@@ -29,13 +29,40 @@ jobs:
       - name: Install dbt
         run: pip install -r requirements.txt
 
+      - name: Create dbt profiles.yml
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        env:
+          SNOWFLAKE_ORGANIZATION: ${{ secrets.SNOWFLAKE_ORGANIZATION }}
+          SNOWFLAKE_ACCOUNT_NAME: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+        run: |
+          mkdir -p profiles
+          # Construct full account identifier: organization-account_name
+          FULL_ACCOUNT="${SNOWFLAKE_ORGANIZATION}-${SNOWFLAKE_ACCOUNT_NAME}"
+          cat > profiles/profiles.yml <<EOF
+          dbt_retailpulse:
+            target: prod
+            outputs:
+              prod:
+                type: snowflake
+                account: "${FULL_ACCOUNT}"
+                user: "{{ env_var('SNOWFLAKE_USERNAME') }}"
+                password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+                role: DBT_ROLE
+                warehouse: TRANSFORM_WH
+                database: PROD_DB
+                schema: SILVER
+                threads: 4
+                client_session_keep_alive: false
+                query_tag: dbt_prod
+          EOF
+
       - name: Install dbt packages
         working-directory: ${{ env.DBT_PROJECT_DIR }}
         env:
           SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
           SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
           SNOWFLAKE_PASSWORD:   ${{ secrets.SNOWFLAKE_PASSWORD }}
-        run: dbt deps
+        run: dbt deps --profiles-dir profiles
 
       - name: dbt build production
         working-directory: ${{ env.DBT_PROJECT_DIR }}
