@@ -27,11 +27,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
       # ── 3. Install dbt ────────────────────────────────────
       - name: Install dbt
         run: |
-          pip install dbt-core dbt-snowflake
+          pip install -r requirements.txt
           dbt --version
 
       # ── 4. Create profiles.yml ────────────────────────────
