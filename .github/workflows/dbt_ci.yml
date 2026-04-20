@@ -34,7 +34,30 @@ jobs:
           pip install dbt-core dbt-snowflake
           dbt --version
 
-      # ── 4. Install dbt packages ───────────────────────────
+      # ── 4. Create profiles.yml ────────────────────────────
+      - name: Create dbt profiles.yml
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          mkdir -p profiles
+          cat > profiles/profiles.yml <<'EOF'
+          dbt_retailpulse:
+            target: ci
+            outputs:
+              ci:
+                type: snowflake
+                account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+                user: "{{ env_var('SNOWFLAKE_USERNAME') }}"
+                password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+                role: DBT_ROLE
+                warehouse: TRANSFORM_WH
+                database: DEV_DB
+                schema: "CI_{{ env_var('GITHUB_SHA', 'local') | truncate(7, True, '') }}"
+                threads: 4
+                client_session_keep_alive: false
+                query_tag: dbt_ci
+          EOF
+
+      # ── 5. Install dbt packages ───────────────────────────
       - name: Install dbt packages
         working-directory: ${{ env.PROJECT_DIR }}
         env:
@@ -43,7 +66,7 @@ jobs:
           SNOWFLAKE_PASSWORD:   ${{ secrets.SNOWFLAKE_PASSWORD }}
         run: dbt deps
 
-      # ── 5. Test connection ────────────────────────────────
+      # ── 6. Test connection ────────────────────────────────
       - name: dbt debug
         working-directory: ${{ env.PROJECT_DIR }}
         env:
@@ -53,7 +76,7 @@ jobs:
           GITHUB_SHA:           ${{ github.sha }}
         run: dbt debug --target ci --profiles-dir profiles
 
-      # ── 6. Download production artifacts for slim CI ──────
+      # ── 7. Download production artifacts for slim CI ──────
       - name: Download prod manifest
         env:
           AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -65,7 +88,7 @@ jobs:
             ${{ env.PROJECT_DIR }}/prod_manifest.json \
           || echo "No prod manifest found — running full build"
 
-      # ── 7. Run slim CI ────────────────────────────────────
+      # ── 8. Run slim CI ────────────────────────────────────
       - name: dbt build (slim CI)
         working-directory: ${{ env.PROJECT_DIR }}
         env:
@@ -89,7 +112,7 @@ jobs:
               --profiles-dir profiles
           fi
 
-      # ── 8. Upload CI artifacts ────────────────────────────
+      # ── 9. Upload CI artifacts ────────────────────────────
       - name: Upload CI manifest
         if: always()
         uses: actions/upload-artifact@v4
@@ -97,7 +120,7 @@ jobs:
           name: dbt-ci-manifest
           path: ${{ env.PROJECT_DIR }}/target/manifest.json
 
-      # ── 9. Clean up CI schema ─────────────────────────────
+      # ── 10. Clean up CI schema ────────────────────────────
       - name: Drop CI schema
         if: always()
         working-directory: ${{ env.PROJECT_DIR }}
