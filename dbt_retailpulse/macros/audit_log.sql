@@ -5,6 +5,7 @@
 
     Usage in model config:
       {{ config(post_hook="{{ audit_log() }}") }}
+      this is documentation
   -#}
 
   INSERT INTO DEV_DB.GOLD.dbt_audit_log (
