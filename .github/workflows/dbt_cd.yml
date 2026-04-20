@@ -27,7 +27,7 @@ jobs:
           cache: 'pip'
 
       - name: Install dbt
-        run: pip install dbt-core dbt-snowflake
+        run: pip install -r requirements.txt
 
       - name: Install dbt packages
         working-directory: ${{ env.DBT_PROJECT_DIR }}
