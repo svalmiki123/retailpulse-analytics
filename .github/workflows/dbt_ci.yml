@@ -9,7 +9,6 @@ on:
 
 env:
   DBT_PROJECT_DIR: dbt_retailpulse
-  DBT_PROFILES_DIR: dbt_retailpulse/profiles
 
 jobs:
   dbt-ci:
