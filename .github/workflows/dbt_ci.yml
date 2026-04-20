@@ -78,6 +78,7 @@ jobs:
 
       # ── 7. Download production artifacts for slim CI ──────
       - name: Download prod manifest
+        working-directory: ${{ env.PROJECT_DIR }}
         env:
           AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -85,7 +86,7 @@ jobs:
         run: |
           aws s3 cp \
             s3://retailpulse-data-lake-siva-valmiki/dbt-artifacts/prod/manifest.json \
-            ${{ env.PROJECT_DIR }}/prod_manifest.json \
+            prod_manifest.json \
           || echo "No prod manifest found — running full build"
 
       # ── 8. Run slim CI ────────────────────────────────────
