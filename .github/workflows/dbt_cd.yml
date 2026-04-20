@@ -115,3 +115,4 @@ jobs:
           echo "✅ Production deploy complete"
           echo "Commit: ${{ github.sha }}"
           echo "Deployed by: ${{ github.actor }}"
+          echo "dbt docs: https://retailpulse-data-lake-siva-valmiki.s3.amazonaws.com/dbt-docs/index.html"
