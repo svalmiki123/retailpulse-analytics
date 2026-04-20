@@ -1,0 +1,116 @@
+name: dbt CI — Test Changed Models
+
+on:
+  pull_request:
+    branches: [dev, main]
+    paths:
+      - 'dbt_retailpulse/**'
+      - '.github/workflows/dbt_ci.yml'
+
+env:
+  DBT_PROJECT_DIR: dbt_retailpulse
+  DBT_PROFILES_DIR: dbt_retailpulse/profiles
+
+jobs:
+  dbt-ci:
+    name: dbt Slim CI
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout code ──────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history needed for state comparison
+
+      # ── 2. Set up Python ──────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # ── 3. Install dbt ────────────────────────────────────
+      - name: Install dbt
+        run: |
+          pip install dbt-core dbt-snowflake
+          dbt --version
+
+      # ── 4. Install dbt packages ───────────────────────────
+      - name: Install dbt packages
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        env:
+          SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWFLAKE_PASSWORD:   ${{ secrets.SNOWFLAKE_PASSWORD }}
+        run: dbt deps
+
+      # ── 5. Test connection ────────────────────────────────
+      - name: dbt debug
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        env:
+          SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWFLAKE_PASSWORD:   ${{ secrets.SNOWFLAKE_PASSWORD }}
+          GITHUB_SHA:           ${{ github.sha }}
+        run: dbt debug --target ci
+
+      # ── 6. Download production artifacts for slim CI ──────
+      - name: Download prod manifest
+        env:
+          AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION:            ${{ secrets.AWS_REGION }}
+        run: |
+          aws s3 cp \
+            s3://retailpulse-data-lake-siva-valmiki/dbt-artifacts/prod/manifest.json \
+            ${{ env.DBT_PROJECT_DIR }}/prod_manifest.json \
+          || echo "No prod manifest found — running full build"
+
+      # ── 7. Run slim CI ────────────────────────────────────
+      - name: dbt build (slim CI)
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        env:
+          SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWFLAKE_PASSWORD:   ${{ secrets.SNOWFLAKE_PASSWORD }}
+          GITHUB_SHA:           ${{ github.sha }}
+        run: |
+          if [ -f prod_manifest.json ]; then
+            echo "Running slim CI against prod manifest"
+            dbt build \
+              --target ci \
+              --select state:modified+ \
+              --defer \
+              --state . \
+              --profiles-dir profiles
+          else
+            echo "No prod manifest — running full build"
+            dbt build \
+              --target ci \
+              --profiles-dir profiles
+          fi
+
+      # ── 8. Upload CI artifacts ────────────────────────────
+      - name: Upload CI manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-ci-manifest
+          path: ${{ env.DBT_PROJECT_DIR }}/target/manifest.json
+
+      # ── 9. Clean up CI schema ─────────────────────────────
+      - name: Drop CI schema
+        if: always()
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        env:
+          SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWFLAKE_PASSWORD:   ${{ secrets.SNOWFLAKE_PASSWORD }}
+          GITHUB_SHA:           ${{ github.sha }}
+        run: |
+          dbt run-operation drop_schema \
+            --args "{'schema_name': 'CI_$(echo $GITHUB_SHA | cut -c1-7)'}" \
+            --target ci \
+            --profiles-dir profiles \
+          || echo "Schema cleanup skipped"
