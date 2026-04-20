@@ -1,0 +1,40 @@
+name: 'dbt_retailpulse'
+version: '1.0.0'
+config-version: 2
+
+profile: 'dbt_retailpulse'
+
+model-paths:      ["models"]
+analysis-paths:   ["analyses"]
+test-paths:       ["tests"]
+seed-paths:       ["seeds"]
+macro-paths:      ["macros"]
+snapshot-paths:   ["snapshots"]
+
+target-path:      "target"
+clean-targets:    ["target", "dbt_packages"]
+
+models:
+  dbt_retailpulse:
+
+    bronze:
+      +materialized: view
+      +schema: BRONZE
+      +tags: ["bronze", "source"]
+
+    silver:
+      +materialized: incremental
+      +schema: SILVER
+      +tags: ["silver", "staging"]
+
+    gold:
+      +materialized: table
+      +schema: GOLD
+      +tags: ["gold", "marts"]
+
+    semantic:
+      +materialized: view
+      +schema: SEMANTIC
+      +tags: ["semantic", "metrics"]
+      metricflow_time_spine:
+        +materialized: table

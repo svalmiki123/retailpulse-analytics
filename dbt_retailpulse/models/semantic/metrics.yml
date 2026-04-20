@@ -1,0 +1,132 @@
+metrics:
+
+  # ── Revenue Metrics ────────────────────────────────────────
+
+  - name: total_revenue
+    description: >
+      Total revenue across all orders. Returns are counted as
+      negative revenue. This is the single source of truth for
+      revenue across all dashboards and reports.
+    type: simple
+    type_params:
+      measure:
+        name: total_revenue
+    label: "Total Revenue"
+
+  - name: completed_revenue
+    description: "Revenue from completed orders only — excludes returns and pending"
+    type: simple
+    type_params:
+      measure:
+        name: total_revenue
+    label: "Completed Revenue"
+    filter: |
+      {{ Dimension('order__order_status') }} = 'COMPLETED'
+
+  - name: avg_order_value
+    description: "Average revenue per order"
+    type: simple
+    type_params:
+      measure:
+        name: avg_order_value
+    label: "Average Order Value"
+
+  - name: total_discount_given
+    description: "Total discount amount given across all orders"
+    type: simple
+    type_params:
+      measure:
+        name: total_discount
+    label: "Total Discount Given"
+
+  - name: total_net_amount
+    description: "Sum of net amount before return adjustment"
+    type: simple
+    type_params:
+      measure:
+        name: total_net_amount
+    label: "Total Net Amount"
+
+  # ── Volume Metrics ─────────────────────────────────────────
+
+  - name: order_count
+    description: "Total number of orders placed"
+    type: simple
+    type_params:
+      measure:
+        name: order_count
+    label: "Order Count"
+
+  - name: units_sold
+    description: "Total units sold across all orders"
+    type: simple
+    type_params:
+      measure:
+        name: total_quantity
+    label: "Units Sold"
+
+  - name: return_count
+    description: "Total number of returned orders"
+    type: simple
+    type_params:
+      measure:
+        name: return_count
+    label: "Return Count"
+
+  - name: return_rate
+    description: >
+      Percentage of orders that were returned.
+      Calculated as returned orders divided by total orders.
+    type: ratio
+    type_params:
+      numerator:
+        name: return_count
+      denominator:
+        name: order_count
+    label: "Return Rate"
+
+  # ── Customer Metrics ───────────────────────────────────────
+
+  - name: customer_count
+    description: "Total number of unique customers"
+    type: simple
+    type_params:
+      measure:
+        name: customer_count
+    label: "Customer Count"
+
+  - name: avg_customer_ltv
+    description: "Average lifetime value per customer"
+    type: simple
+    type_params:
+      measure:
+        name: avg_lifetime_value
+    label: "Avg Customer LTV"
+
+  - name: total_customer_ltv
+    description: "Sum of lifetime value across all customers"
+    type: simple
+    type_params:
+      measure:
+        name: total_lifetime_value
+    label: "Total Customer LTV"
+
+  # ── Efficiency Metrics ─────────────────────────────────────
+
+  - name: avg_days_to_ship
+    description: "Average days between order placement and shipment"
+    type: simple
+    type_params:
+      measure:
+        name: days_to_ship_avg
+    label: "Avg Days to Ship"
+
+  # ── Cumulative Metrics ─────────────────────────────────────
+
+  - name: cumulative_revenue
+    description: "Running total of revenue over time"
+    type: cumulative
+    type_params:
+      measure:
+        name: total_revenue
+    label: "Cumulative Revenue"

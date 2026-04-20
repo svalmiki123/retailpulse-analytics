@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: bronze_orders
+    description: "Bronze view over raw_orders. No transformations applied."
+    columns:
+      - name: order_id
+        description: "Source order identifier (VARCHAR)"
+        tests:
+          - not_null
+      - name: customer_id
+        description: "Source customer identifier (VARCHAR)"
+        tests:
+          - not_null
+      - name: status
+        description: "Order status"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['completed', 'pending', 'returned']
+
+  - name: bronze_customers
+    description: "Bronze view over raw_customers. No transformations applied."
+    columns:
+      - name: customer_id
+        description: "Source customer identifier"
+        tests:
+          - not_null
+          - unique
+      - name: email
+        description: "Customer email"
+        tests:
+          - not_null
+
+  - name: bronze_products
+    description: "Bronze view over raw_products. No transformations applied."
+    columns:
+      - name: product_id
+        description: "Source product identifier"
+        tests:
+          - not_null
+          - unique

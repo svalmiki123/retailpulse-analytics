@@ -1,0 +1,57 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: "Raw ingested data from S3 via Snowpipe. All columns are VARCHAR."
+    database: RAW_DB
+    schema: BRONZE
+    config:
+      freshness:
+        warn_after:  {count: 6,  period: hour}
+        error_after: {count: 24, period: hour}
+
+    tables:
+      - name: raw_orders
+        config:
+          loaded_at_field: _ingested_at
+        columns:
+          - name: order_id
+            description: "Source order identifier"
+          - name: customer_id
+            description: "FK to raw_customers"
+          - name: product_id
+            description: "FK to raw_products"
+          - name: order_date
+            description: "Date order was placed (VARCHAR — cast in Silver)"
+          - name: status
+            description: "Order status: completed, pending, returned"
+          - name: _ingested_at
+            description: "Timestamp when Snowpipe loaded this row"
+          - name: _source_file
+            description: "S3 file path that generated this row"
+
+      - name: raw_customers
+        description: "Raw customer profiles."
+        config:
+          loaded_at_field: _ingested_at
+        columns:
+          - name: customer_id
+            description: "Source customer identifier"
+          - name: email
+            description: "Customer email address"
+          - name: customer_segment
+            description: "Premium or Standard"
+          - name: _ingested_at
+            description: "Timestamp when Snowpipe loaded this row"
+
+      - name: raw_products
+        description: "Raw product catalog."
+        config:
+          loaded_at_field: _ingested_at
+        columns:
+          - name: product_id
+            description: "Source product identifier"
+          - name: is_active
+            description: "Whether product is active (VARCHAR true/false)"
+          - name: _ingested_at
+            description: "Timestamp when Snowpipe loaded this row"

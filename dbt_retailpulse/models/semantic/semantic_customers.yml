@@ -1,0 +1,55 @@
+semantic_models:
+  - name: customers
+    description: >
+      Semantic model over dim_customers. Defines customer-level
+      entities, dimensions and measures.
+    model: ref('dim_customers')
+
+    entities:
+      - name: customer
+        type: primary
+        expr: customer_sk
+
+    dimensions:
+      - name: signup_date
+        type: time
+        type_params:
+          time_granularity: day
+        expr: signup_date
+      - name: customer_segment
+        type: categorical
+        expr: customer_segment
+      - name: value_tier
+        type: categorical
+        expr: value_tier
+      - name: city
+        type: categorical
+        expr: city
+      - name: state
+        type: categorical
+        expr: state
+      - name: country
+        type: categorical
+        expr: country
+
+    measures:
+      - name: customer_count
+        description: "Total number of customers"
+        agg: count
+        expr: customer_id
+        agg_time_dimension: signup_date
+      - name: total_lifetime_value
+        description: "Sum of lifetime value"
+        agg: sum
+        expr: lifetime_value
+        agg_time_dimension: signup_date
+      - name: avg_lifetime_value
+        description: "Average lifetime value"
+        agg: average
+        expr: lifetime_value
+        agg_time_dimension: signup_date
+      - name: avg_days_since_last_order
+        description: "Average recency"
+        agg: average
+        expr: days_since_last_order
+        agg_time_dimension: signup_date

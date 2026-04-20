@@ -1,0 +1,91 @@
+name: dbt CD — Deploy to Production
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dbt_retailpulse/**'
+      - '.github/workflows/dbt_cd.yml'
+
+env:
+  DBT_PROJECT_DIR: dbt_retailpulse
+  DBT_PROFILES_DIR: dbt_retailpulse/profiles
+
+jobs:
+  dbt-prod:
+    name: dbt Production Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dbt
+        run: pip install dbt-core dbt-snowflake
+
+      - name: Install dbt packages
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        env:
+          SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWFLAKE_PASSWORD:   ${{ secrets.SNOWFLAKE_PASSWORD }}
+        run: dbt deps
+
+      - name: dbt build production
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        env:
+          SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWFLAKE_PASSWORD:   ${{ secrets.SNOWFLAKE_PASSWORD }}
+        run: |
+          dbt build \
+            --target prod \
+            --profiles-dir profiles
+
+      # ── Upload prod manifest to S3 for slim CI ────────────
+      - name: Upload prod manifest to S3
+        env:
+          AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION:            ${{ secrets.AWS_REGION }}
+        run: |
+          aws s3 cp \
+            ${{ env.DBT_PROJECT_DIR }}/target/manifest.json \
+            s3://retailpulse-data-lake-siva-valmiki/dbt-artifacts/prod/manifest.json
+
+      - name: dbt docs generate
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        env:
+          SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWFLAKE_PASSWORD:   ${{ secrets.SNOWFLAKE_PASSWORD }}
+        run: |
+          dbt docs generate \
+            --target prod \
+            --profiles-dir profiles
+
+      - name: Upload docs to S3
+        env:
+          AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION:            ${{ secrets.AWS_REGION }}
+        run: |
+          aws s3 sync \
+            ${{ env.DBT_PROJECT_DIR }}/target/ \
+            s3://retailpulse-data-lake-siva-valmiki/dbt-docs/ \
+            --exclude "*" \
+            --include "manifest.json" \
+            --include "catalog.json" \
+            --include "index.html"
+
+      - name: Notify success
+        run: |
+          echo "✅ Production deploy complete"
+          echo "Commit: ${{ github.sha }}"
+          echo "Deployed by: ${{ github.actor }}"

@@ -1,0 +1,144 @@
+name: dbt CI — Test Changed Models
+
+on:
+  pull_request:
+    branches: [dev, main]
+    paths:
+      - 'dbt_retailpulse/**'
+      - '.github/workflows/dbt_ci.yml'
+
+env:
+  PROJECT_DIR: dbt_retailpulse
+
+jobs:
+  dbt-ci:
+    name: dbt Slim CI
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout code ──────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history needed for state comparison
+
+      # ── 2. Set up Python ──────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # ── 3. Install dbt ────────────────────────────────────
+      - name: Install dbt
+        run: |
+          pip install dbt-core dbt-snowflake
+          dbt --version
+
+      # ── 4. Create profiles.yml ────────────────────────────
+      - name: Create dbt profiles.yml
+        working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          SNOWFLAKE_ORGANIZATION: ${{ secrets.SNOWFLAKE_ORGANIZATION }}
+          SNOWFLAKE_ACCOUNT_NAME: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+        run: |
+          mkdir -p profiles
+          # Construct full account identifier: organization-account_name
+          FULL_ACCOUNT="${SNOWFLAKE_ORGANIZATION}-${SNOWFLAKE_ACCOUNT_NAME}"
+          cat > profiles/profiles.yml <<EOF
+          dbt_retailpulse:
+            target: ci
+            outputs:
+              ci:
+                type: snowflake
+                account: "${FULL_ACCOUNT}"
+                user: "{{ env_var('SNOWFLAKE_USERNAME') }}"
+                password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+                role: DBT_ROLE
+                warehouse: TRANSFORM_WH
+                database: DEV_DB
+                schema: "CI_{{ env_var('GITHUB_SHA', 'local') | truncate(7, True, '') }}"
+                threads: 4
+                client_session_keep_alive: false
+                query_tag: dbt_ci
+          EOF
+
+      # ── 5. Install dbt packages ───────────────────────────
+      - name: Install dbt packages
+        working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWFLAKE_PASSWORD:   ${{ secrets.SNOWFLAKE_PASSWORD }}
+        run: dbt deps
+
+      # ── 6. Test connection ────────────────────────────────
+      - name: dbt debug
+        working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWFLAKE_PASSWORD:   ${{ secrets.SNOWFLAKE_PASSWORD }}
+          GITHUB_SHA:           ${{ github.sha }}
+        run: dbt debug --target ci --profiles-dir profiles
+
+      # ── 7. Download production artifacts for slim CI ──────
+      - name: Download prod manifest
+        working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION:            ${{ secrets.AWS_REGION }}
+        run: |
+          mkdir -p prod_state
+          aws s3 cp \
+            s3://retailpulse-data-lake-siva-valmiki/dbt-artifacts/prod/manifest.json \
+            prod_state/manifest.json \
+          || echo "No prod manifest found — running full build"
+
+      # ── 8. Run slim CI ────────────────────────────────────
+      - name: dbt build (slim CI)
+        working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWFLAKE_PASSWORD:   ${{ secrets.SNOWFLAKE_PASSWORD }}
+          GITHUB_SHA:           ${{ github.sha }}
+        run: |
+          if [ -f prod_state/manifest.json ]; then
+            echo "Running slim CI against prod manifest"
+            dbt build \
+              --target ci \
+              --select state:modified+ \
+              --defer \
+              --state prod_state \
+              --profiles-dir profiles
+          else
+            echo "No prod manifest — running full build"
+            dbt build \
+              --target ci \
+              --profiles-dir profiles
+          fi
+
+      # ── 9. Upload CI artifacts ────────────────────────────
+      - name: Upload CI manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-ci-manifest
+          path: ${{ env.PROJECT_DIR }}/target/manifest.json
+
+      # ── 10. Clean up CI schema ────────────────────────────
+      - name: Drop CI schema
+        if: always()
+        working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
+          SNOWFLAKE_PASSWORD:   ${{ secrets.SNOWFLAKE_PASSWORD }}
+          GITHUB_SHA:           ${{ github.sha }}
+        run: |
+          dbt run-operation drop_schema \
+            --args "{'schema_name': 'CI_$(echo $GITHUB_SHA | cut -c1-7)'}" \
+            --target ci \
+            --profiles-dir profiles \
+          || echo "Schema cleanup skipped"
