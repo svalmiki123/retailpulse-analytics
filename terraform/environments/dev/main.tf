@@ -24,7 +24,7 @@ terraform {
 provider "snowflake" {
   organization_name = var.snowflake_organization
   account_name      = var.snowflake_account_name
-  user          = var.snowflake_username
+  user              = var.snowflake_username
   password          = var.snowflake_password
   role              = "USERADMIN"
 }
@@ -37,7 +37,7 @@ provider "snowflake" {
   alias             = "sysadmin"
   organization_name = var.snowflake_organization
   account_name      = var.snowflake_account_name
-  user          = var.snowflake_username
+  user              = var.snowflake_username
   password          = var.snowflake_password
   role              = "SYSADMIN"
 }
@@ -49,7 +49,7 @@ provider "snowflake" {
   alias             = "securityadmin"
   organization_name = var.snowflake_organization
   account_name      = var.snowflake_account_name
-  user          = var.snowflake_username
+  user              = var.snowflake_username
   password          = var.snowflake_password
   role              = "SECURITYADMIN"
 }

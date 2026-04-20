@@ -255,6 +255,6 @@ resource "snowflake_grant_privileges_to_account_role" "reporter_semantic_read" {
 # OUTPUTS
 # ═══════════════════════════════════════════════════
 
-output "raw_db_name"  { value = snowflake_database.raw_db.name }
-output "dev_db_name"  { value = snowflake_database.dev_db.name }
+output "raw_db_name" { value = snowflake_database.raw_db.name }
+output "dev_db_name" { value = snowflake_database.dev_db.name }
 output "prod_db_name" { value = snowflake_database.prod_db.name }
