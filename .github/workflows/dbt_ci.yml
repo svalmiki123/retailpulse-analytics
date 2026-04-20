@@ -37,15 +37,20 @@ jobs:
       # ── 4. Create profiles.yml ────────────────────────────
       - name: Create dbt profiles.yml
         working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          SNOWFLAKE_ORGANIZATION: ${{ secrets.SNOWFLAKE_ORGANIZATION }}
+          SNOWFLAKE_ACCOUNT_NAME: ${{ secrets.SNOWFLAKE_ACCOUNT }}
         run: |
           mkdir -p profiles
-          cat > profiles/profiles.yml <<'EOF'
+          # Construct full account identifier: organization-account_name
+          FULL_ACCOUNT="${SNOWFLAKE_ORGANIZATION}-${SNOWFLAKE_ACCOUNT_NAME}"
+          cat > profiles/profiles.yml <<EOF
           dbt_retailpulse:
             target: ci
             outputs:
               ci:
                 type: snowflake
-                account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+                account: "${FULL_ACCOUNT}"
                 user: "{{ env_var('SNOWFLAKE_USERNAME') }}"
                 password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
                 role: DBT_ROLE
