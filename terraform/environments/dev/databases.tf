@@ -154,6 +154,16 @@ resource "snowflake_grant_privileges_to_account_role" "reporter_dev_db_usage" {
   }
 }
 
+resource "snowflake_grant_privileges_to_account_role" "dbt_prod_db_usage" {
+  provider          = snowflake.securityadmin
+  account_role_name = snowflake_account_role.dbt_role.name
+  privileges        = ["USAGE", "CREATE SCHEMA"]
+  on_account_object {
+    object_type = "DATABASE"
+    object_name = snowflake_database.prod_db.name
+  }
+}
+
 # ═══════════════════════════════════════════════════
 # SCHEMA GRANTS
 # USAGE + CREATE privileges on schemas
@@ -192,6 +202,33 @@ resource "snowflake_grant_privileges_to_account_role" "dbt_semantic_write" {
   privileges        = ["USAGE", "CREATE TABLE", "CREATE VIEW"]
   on_schema {
     schema_name = "${snowflake_database.dev_db.name}.${snowflake_schema.semantic.name}"
+  }
+}
+
+resource "snowflake_grant_privileges_to_account_role" "dbt_prod_silver_write" {
+  provider          = snowflake.securityadmin
+  account_role_name = snowflake_account_role.dbt_role.name
+  privileges        = ["USAGE", "CREATE TABLE", "CREATE VIEW", "CREATE STAGE"]
+  on_schema {
+    schema_name = "${snowflake_database.prod_db.name}.${snowflake_schema.prod_silver.name}"
+  }
+}
+
+resource "snowflake_grant_privileges_to_account_role" "dbt_prod_gold_write" {
+  provider          = snowflake.securityadmin
+  account_role_name = snowflake_account_role.dbt_role.name
+  privileges        = ["USAGE", "CREATE TABLE", "CREATE VIEW", "CREATE STAGE"]
+  on_schema {
+    schema_name = "${snowflake_database.prod_db.name}.${snowflake_schema.prod_gold.name}"
+  }
+}
+
+resource "snowflake_grant_privileges_to_account_role" "dbt_prod_semantic_write" {
+  provider          = snowflake.securityadmin
+  account_role_name = snowflake_account_role.dbt_role.name
+  privileges        = ["USAGE", "CREATE TABLE", "CREATE VIEW"]
+  on_schema {
+    schema_name = "${snowflake_database.prod_db.name}.${snowflake_schema.prod_semantic.name}"
   }
 }
 

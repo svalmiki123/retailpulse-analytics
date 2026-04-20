@@ -22,20 +22,23 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('stg_customers')
-              field: customer_id
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
       - name: product_id
         description: "FK to stg_products"
         tests:
           - not_null
           - relationships:
-              to: ref('stg_products')
-              field: product_id
+              arguments:
+                to: ref('stg_products')
+                field: product_id
       - name: status
         description: "Normalized order status"
         tests:
           - accepted_values:
-              values: ['COMPLETED', 'PENDING', 'RETURNED']
+              arguments:
+                values: ['COMPLETED', 'PENDING', 'RETURNED']
       - name: order_date
         description: "Order date cast to DATE"
         tests:
@@ -68,7 +71,8 @@ models:
         description: "Normalized segment"
         tests:
           - accepted_values:
-              values: ['Premium', 'Standard', 'Unknown']
+              arguments:
+                values: ['Premium', 'Standard', 'Unknown']
       - name: signup_date
         description: "Customer signup date as DATE"
         tests:

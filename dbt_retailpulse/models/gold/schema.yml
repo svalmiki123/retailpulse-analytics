@@ -32,7 +32,8 @@ models:
       - name: value_tier
         tests:
           - accepted_values:
-              values: ['High Value', 'Mid Value', 'Low Value', 'No Orders']
+              arguments:
+                values: ['High Value', 'Mid Value', 'Low Value', 'No Orders']
 
   - name: dim_products
     description: "Product dimension enriched with sales performance tier."
@@ -48,7 +49,8 @@ models:
       - name: performance_tier
         tests:
           - accepted_values:
-              values: ['Top Seller', 'Mid Seller', 'Low Seller', 'Never Sold']
+              arguments:
+                values: ['Top Seller', 'Mid Seller', 'Low Seller', 'Never Sold']
 
   - name: fct_orders
     description: "Central fact table. One row per order."

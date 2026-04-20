@@ -5,10 +5,10 @@ sources:
     description: "Raw ingested data from S3 via Snowpipe. All columns are VARCHAR."
     database: RAW_DB
     schema: BRONZE
-
-    freshness:
-      warn_after:  {count: 6,  period: hour}
-      error_after: {count: 24, period: hour}
+    config:
+      freshness:
+        warn_after:  {count: 6,  period: hour}
+        error_after: {count: 24, period: hour}
 
     tables:
       - name: raw_orders
