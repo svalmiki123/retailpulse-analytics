@@ -8,8 +8,7 @@ on:
       - '.github/workflows/dbt_cd.yml'
 
 env:
-  DBT_PROJECT_DIR: dbt_retailpulse
-  DBT_PROFILES_DIR: dbt_retailpulse/profiles
+  PROJECT_DIR: dbt_retailpulse
 
 jobs:
   dbt-prod:
@@ -30,7 +29,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Create dbt profiles.yml
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        working-directory: ${{ env.PROJECT_DIR }}
         env:
           SNOWFLAKE_ORGANIZATION: ${{ secrets.SNOWFLAKE_ORGANIZATION }}
           SNOWFLAKE_ACCOUNT_NAME: ${{ secrets.SNOWFLAKE_ACCOUNT }}
@@ -57,15 +56,15 @@ jobs:
           EOF
 
       - name: Install dbt packages
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        working-directory: ${{ env.PROJECT_DIR }}
         env:
           SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
           SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
           SNOWFLAKE_PASSWORD:   ${{ secrets.SNOWFLAKE_PASSWORD }}
-        run: dbt deps --profiles-dir profiles
+        run: dbt deps
 
       - name: dbt build production
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        working-directory: ${{ env.PROJECT_DIR }}
         env:
           SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
           SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
@@ -83,11 +82,11 @@ jobs:
           AWS_REGION:            ${{ secrets.AWS_REGION }}
         run: |
           aws s3 cp \
-            ${{ env.DBT_PROJECT_DIR }}/target/manifest.json \
+            ${{ env.PROJECT_DIR }}/target/manifest.json \
             s3://retailpulse-data-lake-siva-valmiki/dbt-artifacts/prod/manifest.json
 
       - name: dbt docs generate
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        working-directory: ${{ env.PROJECT_DIR }}
         env:
           SNOWFLAKE_ACCOUNT:    ${{ secrets.SNOWFLAKE_ACCOUNT }}
           SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
@@ -104,7 +103,7 @@ jobs:
           AWS_REGION:            ${{ secrets.AWS_REGION }}
         run: |
           aws s3 sync \
-            ${{ env.DBT_PROJECT_DIR }}/target/ \
+            ${{ env.PROJECT_DIR }}/target/ \
             s3://retailpulse-data-lake-siva-valmiki/dbt-docs/ \
             --exclude "*" \
             --include "manifest.json" \
