@@ -51,7 +51,7 @@ jobs:
           SNOWFLAKE_USERNAME:   ${{ secrets.SNOWFLAKE_USERNAME }}
           SNOWFLAKE_PASSWORD:   ${{ secrets.SNOWFLAKE_PASSWORD }}
           GITHUB_SHA:           ${{ github.sha }}
-        run: dbt debug --target ci
+        run: dbt debug --target ci --profiles-dir profiles
 
       # ── 6. Download production artifacts for slim CI ──────
       - name: Download prod manifest
