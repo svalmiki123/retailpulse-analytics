@@ -91,7 +91,7 @@ resource "aws_iam_user_policy" "dbt_artifacts_access" {
         ]
         Condition = {
           StringLike = {
-            "s3:prefix" = ["dbt-artifacts/*"]
+            "s3:prefix" = ["dbt-artifacts/*", "dbt-docs/*"]
           }
         }
       },
@@ -100,10 +100,12 @@ resource "aws_iam_user_policy" "dbt_artifacts_access" {
         Effect = "Allow"
         Action = [
           "s3:GetObject",
-          "s3:PutObject"
+          "s3:PutObject",
+          "s3:DeleteObject"
         ]
         Resource = [
-          "arn:aws:s3:::${var.data_lake_bucket}/dbt-artifacts/*"
+          "arn:aws:s3:::${var.data_lake_bucket}/dbt-artifacts/*",
+          "arn:aws:s3:::${var.data_lake_bucket}/dbt-docs/*"
         ]
       }
     ]
