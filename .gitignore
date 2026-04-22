@@ -27,3 +27,4 @@ venv/
 *.pem
 *.key
 secrets.jsondbt_venv/
+ingestion/streamlit/.env
